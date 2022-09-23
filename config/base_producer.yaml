@@ -3,7 +3,12 @@ default:
   threads: 6
   producer_type: BaseProducer
   producer_config:
-    bootstrap.servers: localhost:9092
+    bootstrap.servers: ""
+    security.protocol: "SASL_SSL"
+    sasl.mechanism: "SCRAM-SHA-256"
+    sasl.username: "admin"
+    sasl.password: ""
+    # ssl.ca.location: "..ca.crt"
     queue.buffering.max.ms: 100
     queue.buffering.max.messages: 1000000
 
@@ -11,9 +16,9 @@ scenarios:
   10B_bursts:
     repeat_times: 5
     repeat_pause: 10
-    topic: benchmark_topic_10B
+    topic: benchmark
     message_size: 10
-    message_count: 20000000
+    message_count: 1
 
   1KB_bursts:
     repeat_times: 3
@@ -24,7 +29,9 @@ scenarios:
 
   10KB_bursts:
     repeat_times: 3
-    repeat_pause: 20
+    repeat_pause: 0
     topic: benchmark_topic_10KB
     message_size: 10240
-    message_count: 50000
+    # message_size: 10
+    message_count: 100000
+    # message_count: 1

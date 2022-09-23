@@ -1,9 +1,8 @@
 use super::config::{ConsumerBenchmark, ConsumerScenario, ConsumerType};
 use super::units::{Bytes, Messages, Seconds};
 
-use futures::Stream;
 use rdkafka::config::FromClientConfig;
-use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext, StreamConsumer};
+use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext};
 use rdkafka::error::KafkaError;
 
 use std::collections::HashSet;
@@ -101,52 +100,52 @@ fn run_base_consumer_benchmark(scenario: &ConsumerScenario) -> ConsumerBenchmark
     ConsumerBenchmarkStats::new(messages, bytes as u64, start_time.elapsed())
 }
 
-fn run_stream_consumer_benchmark(scenario: &ConsumerScenario) -> ConsumerBenchmarkStats {
-    let consumer: StreamConsumer = initialize_consumer(scenario);
-    let mut partition_eof = HashSet::new();
-    let partition_count = get_topic_partitions_count(&consumer, &scenario.topic)
-        .expect("Topic not found");
+// fn run_stream_consumer_benchmark(scenario: &ConsumerScenario) -> ConsumerBenchmarkStats {
+//     let consumer: StreamConsumer = initialize_consumer(scenario);
+    // let mut partition_eof = HashSet::new();
+    // let partition_count = get_topic_partitions_count(&consumer, &scenario.topic)
+    //     .expect("Topic not found");
 
-    let limit = if scenario.message_limit < 0 {
-        u64::MAX
-    } else {
-        scenario.message_limit as u64
-    };
+    // let limit = if scenario.message_limit < 0 {
+    //     u64::MAX
+    // } else {
+    //     scenario.message_limit as u64
+    // };
 
-    let mut start_time = Instant::now();
-    let mut messages = 0;
-    let mut bytes = 0;
+    // let mut start_time = Instant::now();
+    // let mut messages = 0;
+    // let mut bytes = 0;
 
-    for message in consumer.start().wait() {
-        match message {
-            Err(e) => {
-                println!("Error while reading from stream: {:?}", e);
-            },
-            Ok(Ok(message)) => {
-                if messages == 0 {
-                    println!("First message received");
-                    start_time = Instant::now();
-                }
-                if messages >= limit {
-                    break;
-                }
-                messages += 1;
-                bytes += message.payload_len() + message.key_len();
-            },
-            Ok(Err(KafkaError::PartitionEOF(p))) => {
-                partition_eof.insert(p);
-                if partition_eof.len() >= partition_count {
-                    break;
-                }
-            },
-            Ok(Err(e)) => {
-                println!("Kafka error: {}", e);
-            },
-        };
-    }
+    // for message in consumer.start().wait() {
+    //     match message {
+    //         Err(e) => {
+    //             println!("Error while reading from stream: {:?}", e);
+    //         },
+    //         Ok(Ok(message)) => {
+    //             if messages == 0 {
+    //                 println!("First message received");
+    //                 start_time = Instant::now();
+    //             }
+    //             if messages >= limit {
+    //                 break;
+    //             }
+    //             messages += 1;
+    //             bytes += message.payload_len() + message.key_len();
+    //         },
+    //         Ok(Err(KafkaError::PartitionEOF(p))) => {
+    //             partition_eof.insert(p);
+    //             if partition_eof.len() >= partition_count {
+    //                 break;
+    //             }
+    //         },
+    //         Ok(Err(e)) => {
+    //             println!("Kafka error: {}", e);
+    //         },
+    //     };
+    // }
 
-    ConsumerBenchmarkStats::new(messages, bytes as u64, start_time.elapsed())
-}
+    // ConsumerBenchmarkStats::new(messages, bytes as u64, start_time.elapsed())
+// }
 
 pub fn run(config: &ConsumerBenchmark, scenario_name: &str) {
     let scenario = config
@@ -156,7 +155,7 @@ pub fn run(config: &ConsumerBenchmark, scenario_name: &str) {
 
     let stats = match scenario.consumer_type {
         ConsumerType::BaseConsumer => run_base_consumer_benchmark(scenario),
-        ConsumerType::StreamConsumer => run_stream_consumer_benchmark(scenario),
+        ConsumerType::StreamConsumer => todo!(),
     };
 
     stats.print();
